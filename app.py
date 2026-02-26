@@ -1,4 +1,3 @@
-import json
 import pandas as pd
 import streamlit as st
 import firebase_admin
@@ -7,12 +6,21 @@ from firebase_admin import credentials, db
 st.title("💧 Wastewater Monitoring Dashboard")
 
 if not firebase_admin._apps:
-    cred = credentials.Certificate(dict(st.secrets["firebase"]))
+
+    # ✅ Get secrets as dictionary
+    firebase_dict = dict(st.secrets["firebase"])
+
+    # ✅ Fix private key formatting
+    firebase_dict["private_key"] = firebase_dict["private_key"].replace("\n", "\\n")
+
+    # ✅ Create credential
+    cred = credentials.Certificate(firebase_dict)
+
     firebase_admin.initialize_app(cred, {
-        'databaseURL': 'https://wastewater-monitoring-sy-default-rtdb.asia-southeast1.firebasedatabase.app/'
+        "databaseURL": "https://wastewater-monitoring-sy-default-rtdb.asia-southeast1.firebasedatabase.app/"
     })
 
-# Fetch data from Firebase
+# Fetch data
 ref = db.reference("/")
 data = ref.get()
 
@@ -28,7 +36,7 @@ st.metric("COD (mg/L)", cod)
 st.metric("TDS (ppm)", tds)
 st.metric("Temperature (°C)", temperature)
 
-# Alert system
+# Alerts
 if ph > 8:
     st.error("⚠ pH level is too high!")
 elif ph < 6.5:
@@ -44,4 +52,3 @@ data_graph = pd.DataFrame({
 
 st.subheader("pH Trend")
 st.line_chart(data_graph.set_index("Time"))
-
