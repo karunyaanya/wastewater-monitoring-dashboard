@@ -8,7 +8,7 @@ st.title("💧 Wastewater Monitoring Dashboard")
 if not firebase_admin._apps:
 
     # ✅ Get secrets as dictionary
-    firebase_dict = dict(st.secrets["firebase"])
+    firebase_dict = dict(os.environ["FIREBASE_KEY"])
 
     # ✅ Fix private key formatting
     firebase_dict["private_key"] = firebase_dict["private_key"].replace("\n", "\\n")
@@ -52,3 +52,4 @@ data_graph = pd.DataFrame({
 
 st.subheader("pH Trend")
 st.line_chart(data_graph.set_index("Time"))
+
