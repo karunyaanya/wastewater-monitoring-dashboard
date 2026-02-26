@@ -8,7 +8,7 @@ st.title("💧 Wastewater Monitoring Dashboard")
 
 # Initialize Firebase only once
 if not firebase_admin._apps:
-    cred = credentials.Certificate("serviceAccountKey.json")
+    cred = credentials.Certificate(st.secrets["firebase"])
     firebase_admin.initialize_app(cred, {
         'databaseURL': 'https://wastewater-monitoring-sy-default-rtdb.asia-southeast1.firebasedatabase.app/'
     })
@@ -44,4 +44,5 @@ data_graph = pd.DataFrame({
 })
 
 st.subheader("pH Trend")
+
 st.line_chart(data_graph.set_index("Time"))
