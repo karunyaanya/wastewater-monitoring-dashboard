@@ -1,14 +1,14 @@
-import streamlit as st
+import json
 import pandas as pd
-import matplotlib.pyplot as plt
+import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, db
 
 st.title("💧 Wastewater Monitoring Dashboard")
 
-# Initialize Firebase only once
 if not firebase_admin._apps:
-    cred = credentials.Certificate(st.secrets["firebase"])
+    firebase_dict = json.loads(st.secrets["firebase_key"])
+    cred = credentials.Certificate(firebase_dict)
     firebase_admin.initialize_app(cred, {
         'databaseURL': 'https://wastewater-monitoring-sy-default-rtdb.asia-southeast1.firebasedatabase.app/'
     })
@@ -44,5 +44,4 @@ data_graph = pd.DataFrame({
 })
 
 st.subheader("pH Trend")
-
 st.line_chart(data_graph.set_index("Time"))
