@@ -7,8 +7,7 @@ from firebase_admin import credentials, db
 st.title("💧 Wastewater Monitoring Dashboard")
 
 if not firebase_admin._apps:
-    firebase_dict = json.loads(st.secrets["firebase_key"])
-    cred = credentials.Certificate(firebase_dict)
+    cred = credentials.Certificate(dict(st.secrets["firebase"]))
     firebase_admin.initialize_app(cred, {
         'databaseURL': 'https://wastewater-monitoring-sy-default-rtdb.asia-southeast1.firebasedatabase.app/'
     })
@@ -45,3 +44,4 @@ data_graph = pd.DataFrame({
 
 st.subheader("pH Trend")
 st.line_chart(data_graph.set_index("Time"))
+
