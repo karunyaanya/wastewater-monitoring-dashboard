@@ -5,6 +5,12 @@ import pandas as pd
 import firebase_admin
 from firebase_admin import credentials, db
 
+st.set_page_config(
+    page_title="Wastewater Monitoring System",
+    page_icon="💧",
+    layout="wide"
+)
+
 st.title("💧 Wastewater Monitoring Dashboard")
 
 if not firebase_admin._apps:
@@ -18,7 +24,6 @@ if not firebase_admin._apps:
             "databaseURL": "https://wastewater-monitoring-sy-default-rtdb.asia-southeast1.firebasedatabase.app/"
         },
     )
-
 
 # Fetch data
 ref = db.reference("/")
@@ -52,6 +57,3 @@ data_graph = pd.DataFrame({
 
 st.subheader("pH Trend")
 st.line_chart(data_graph.set_index("Time"))
-
-
-
