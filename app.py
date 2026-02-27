@@ -29,17 +29,20 @@ if not firebase_admin._apps:
 ref = db.reference("/")
 data = ref.get()
 
-ph = data["ph"]
-cod = data["cod"]
-tds = data["tds"]
-temperature = data["temperature"]
+if data:
+    ph = data.get("ph", "N/A")
+    cod = data.get("cod", "N/A")
+    tds = data.get("tds", "N/A")
+    temp = data.get("temperature", "N/A")
+else:
+    ph = cod = tds = temp = "No Data"
 
 st.subheader("Current Sensor Readings")
 
 st.metric("pH Level", ph)
 st.metric("COD (mg/L)", cod)
 st.metric("TDS (ppm)", tds)
-st.metric("Temperature (°C)", temperature)
+st.metric("Temperature (°C)", temp)
 
 # Alerts
 if ph > 8:
