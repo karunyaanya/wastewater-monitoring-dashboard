@@ -86,7 +86,13 @@ if not df.empty:
     st.markdown("### 📊 Bar Chart (Latest Readings)")
 
     latest_values = df.iloc[-1][["ph", "cod", "tds", "temperature"]]
-    st.bar_chart(latest_values)
+
+    bar_df = pd.DataFrame({
+        "Parameter": latest_values.index,
+        "Value": latest_values.values
+    })
+
+    st.bar_chart(bar_df.set_index("Parameter"))
 
     # -------- PIE CHART --------
     st.markdown("### 🥧 Pie Chart (Latest Distribution)")
@@ -105,4 +111,3 @@ if not df.empty:
 
 else:
     st.info("No historical data available yet.")
-
