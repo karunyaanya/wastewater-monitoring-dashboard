@@ -30,9 +30,11 @@ if not firebase_admin._apps:
 # ------------------ FETCH DATA ------------------
 ref = db.reference("readings")
 data = ref.get()
+
+df = pd.DataFrame()
+
 if data:
     df = pd.DataFrame(data).T
-
     df["timestamp"] = pd.to_datetime(df.index.astype(int), unit="s")
     df = df.sort_values("timestamp")
 
@@ -42,20 +44,15 @@ if data:
 
     df = df[df["timestamp"] >= last_24_hours]
 
-    if not df.empty:
-        latest = df.iloc[-1]
-
-        ph = latest.get("ph", "N/A")
-        cod = latest.get("cod", "N/A")
-        tds = latest.get("tds", "N/A")
-        temp = latest.get("temperature", "N/A")
-    else:
-        ph = cod = tds = temp = "No Recent Data"
-
+# ---------- SAFE METRIC EXTRACTION ----------
+if not df.empty:
+    latest = df.iloc[-1]
+    ph = latest.get("ph", "N/A")
+    cod = latest.get("cod", "N/A")
+    tds = latest.get("tds", "N/A")
+    temp = latest.get("temperature", "N/A")
 else:
-    df = pd.DataFrame()
-    ph = cod = tds = temp = "No Data"
-
+    ph = cod = tds = temp = "No Recent Data"
 # ------------------ METRICS DISPLAY ------------------
 st.subheader("Current Sensor Readings")
 
