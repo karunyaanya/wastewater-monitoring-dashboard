@@ -38,11 +38,11 @@ if data:
     df["timestamp"] = pd.to_datetime(df.index.astype(int), unit="s")
     df = df.sort_values("timestamp")
 
-    from datetime import datetime, timedelta
-    now = datetime.now()
-    last_24_hours = now - timedelta(hours=24)
+   # from datetime import datetime, timedelta
+    #now = datetime.now()
+    #last_24_hours = now - timedelta(hours=24)
 
-    df = df[df["timestamp"] >= last_24_hours]
+    #df = df[df["timestamp"] >= last_24_hours]
 
 # ---------- SAFE METRIC EXTRACTION ----------
 if not df.empty:
