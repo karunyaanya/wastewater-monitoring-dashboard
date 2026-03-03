@@ -30,13 +30,16 @@ if not firebase_admin._apps:
 # ------------------ FETCH DATA ------------------
 ref = db.reference("readings")
 data = ref.get()
-
 if data:
     df = pd.DataFrame(data).T
 
-    # Convert timestamp index to datetime
     df["timestamp"] = pd.to_datetime(df.index.astype(int), unit="s")
     df = df.sort_values("timestamp")
+
+    from datetime import datetime, timedelta
+    now = datetime.now()
+    last_24_hours = now - timedelta(hours=24)
+    df = df[df["timestamp"] >= last_24_hours]
 
     latest = df.iloc[-1]
 
@@ -69,10 +72,36 @@ if isinstance(ph, (int, float)):
         st.success("✅ pH level is normal")
 
 # ------------------ TREND GRAPH ------------------
+# ------------------ TREND GRAPH ------------------
 if not df.empty:
     st.subheader("Sensor Trends Over Time")
-    st.line_chart(
-        df.set_index("timestamp")[["ph", "cod", "tds", "temperature"]]
+
+    df = df.set_index("timestamp")
+
+    # -------- LINE CHART --------
+    st.markdown("### 📈 Line Chart")
+    st.line_chart(df[["ph", "cod", "tds", "temperature"]])
+
+    # -------- BAR CHART --------
+    st.markdown("### 📊 Bar Chart (Latest Readings)")
+
+    latest_values = df.iloc[-1][["ph", "cod", "tds", "temperature"]]
+    st.bar_chart(latest_values)
+
+    # -------- PIE CHART --------
+    st.markdown("### 🥧 Pie Chart (Latest Distribution)")
+
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+    ax.pie(
+        latest_values,
+        labels=latest_values.index,
+        autopct="%1.1f%%"
     )
+    ax.set_title("Sensor Value Distribution")
+
+    st.pyplot(fig)
+
 else:
     st.info("No historical data available yet.")
