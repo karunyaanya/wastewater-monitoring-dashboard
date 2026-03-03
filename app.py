@@ -39,14 +39,18 @@ if data:
     from datetime import datetime, timedelta
     now = datetime.now()
     last_24_hours = now - timedelta(hours=24)
+
     df = df[df["timestamp"] >= last_24_hours]
 
-    latest = df.iloc[-1]
+    if not df.empty:
+        latest = df.iloc[-1]
 
-    ph = latest.get("ph", "N/A")
-    cod = latest.get("cod", "N/A")
-    tds = latest.get("tds", "N/A")
-    temp = latest.get("temperature", "N/A")
+        ph = latest.get("ph", "N/A")
+        cod = latest.get("cod", "N/A")
+        tds = latest.get("tds", "N/A")
+        temp = latest.get("temperature", "N/A")
+    else:
+        ph = cod = tds = temp = "No Recent Data"
 
 else:
     df = pd.DataFrame()
@@ -71,7 +75,6 @@ if isinstance(ph, (int, float)):
     else:
         st.success("✅ pH level is normal")
 
-# ------------------ TREND GRAPH ------------------
 # ------------------ TREND GRAPH ------------------
 if not df.empty:
     st.subheader("Sensor Trends Over Time")
