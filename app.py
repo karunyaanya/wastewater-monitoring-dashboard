@@ -30,7 +30,7 @@ if not firebase_admin._apps:
 # ------------------ FETCH DATA ------------------
 ref = db.reference("readings")
 data = ref.get()
-
+st.write("DEBUG DATA:", data)
 df = pd.DataFrame()
 
 if data:
@@ -105,3 +105,4 @@ if not df.empty:
 
 else:
     st.info("No historical data available yet.")
+
