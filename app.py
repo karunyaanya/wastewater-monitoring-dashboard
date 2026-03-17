@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 import firebase_admin
 from firebase_admin import credentials, db
+from datetime import datetime, timedelta
 
 # ------------------ PAGE CONFIG ------------------
 st.set_page_config(
@@ -14,11 +15,9 @@ st.set_page_config(
 
 st.title("💧 Wastewater Monitoring Dashboard")
 
-
 # ------------------ FIREBASE INIT ------------------
 if not firebase_admin._apps:
     firebase_dict = json.loads(os.environ["FIREBASE_KEY"])
-
     cred = credentials.Certificate(firebase_dict)
 
     firebase_admin.initialize_app(
@@ -28,7 +27,7 @@ if not firebase_admin._apps:
         },
     )
 
-    # ------------------ LOCATION SELECT ------------------
+# ------------------ LOCATION SELECT ------------------
 st.subheader("🌍 Select Location")
 
 country = st.selectbox("Country", ["India"])
@@ -38,7 +37,6 @@ states_data = states_ref.get()
 
 selected_state = None
 selected_company = None
-load_data = False
 
 if states_data:
     states = list(states_data.keys())
@@ -47,17 +45,14 @@ if states_data:
     if selected_state != "Select State":
         companies = list(states_data[selected_state].keys())
         selected_company = st.selectbox("Company", ["Select Company"] + companies)
-
-        if selected_company != "Select Company":
-            load_data = st.button("✅ Load Data")
 else:
     st.error("No states found in database")
-
 
 # ------------------ FETCH DATA ------------------
 df = pd.DataFrame()
 
-if load_data:
+if selected_state and selected_company and selected_company != "Select Company":
+
     ref = db.reference(f"states/{selected_state}/{selected_company}/readings")
     data = ref.get()
 
@@ -65,79 +60,66 @@ if load_data:
         df = pd.DataFrame(data).T
         df["timestamp"] = pd.to_datetime(df.index.astype(int), unit="s")
         df = df.sort_values("timestamp")
+
+        # -------- 24 HOURS FILTER --------
+        now = datetime.now()
+        last_24 = now - timedelta(hours=24)
+        df = df[df["timestamp"] >= last_24]
+
     else:
-        st.warning("No readings found for this company")
+        st.warning("No readings found")
 
-   # from datetime import datetime, timedelta
-    #now = datetime.now()
-    #last_24_hours = now - timedelta(hours=24)
-
-    #df = df[df["timestamp"] >= last_24_hours]
-
-# ---------- SAFE METRIC EXTRACTION ----------
+# ------------------ MAIN LOGIC ------------------
 if not df.empty:
+
+    # ------------------ SELECT TYPE ------------------
+    st.subheader("⚙️ Select Data Type")
+    data_type = st.selectbox("Choose Data", ["primary", "secondary", "tertiary"])
+
     latest = df.iloc[-1]
-    ph = latest.get("ph", "N/A")
-    cod = latest.get("cod", "N/A")
-    tds = latest.get("tds", "N/A")
-    temp = latest.get("temperature", "N/A")
-else:
-    ph = cod = tds = temp = "No Recent Data"
-# ------------------ METRICS DISPLAY ------------------
-st.subheader("Current Sensor Readings")
 
-col1, col2, col3, col4 = st.columns(4)
+    # ------------------ PARAMETERS ------------------
+    parameters = [
+        "ph", "colour", "odour", "turbidity", "conductivity",
+        "tds", "suspended_solids", "calcium", "magnesium",
+        "alkalinity_ph", "alkalinity_mo", "sulphate",
+        "chlorides", "silica", "iron", "cod", "bod",
+        "hardness", "chlorine"
+    ]
 
-col1.metric("pH Level", ph)
-col2.metric("COD (mg/L)", cod)
-col3.metric("TDS (ppm)", tds)
-col4.metric("Temperature (°C)", temp)
+    # ------------------ TABLE ------------------
+    table_data = []
 
-# ------------------ ALERT SYSTEM ------------------
-if isinstance(ph, (int, float)):
-    if ph > 8:
-        st.error("⚠ pH level is too high!")
-    elif ph < 6.5:
-        st.warning("⚠ pH level is too low!")
-    else:
-        st.success("✅ pH level is normal")
+    for i, param in enumerate(parameters, start=1):
+        try:
+            value = latest[param].get(data_type, "NA")
+        except:
+            value = "NA"
 
-# ------------------ TREND GRAPH ------------------
-if not df.empty:
-    st.subheader("Sensor Trends Over Time")
+        table_data.append({
+            "Sl.No": i,
+            "Parameter": param.upper(),
+            "Value": value
+        })
+
+    table_df = pd.DataFrame(table_data)
+
+    st.subheader("📋 Water Analysis Report")
+    st.dataframe(table_df, use_container_width=True)
+
+    # ------------------ CHARTS ------------------
+    st.subheader("📊 24 Hour Trends")
 
     df = df.set_index("timestamp")
 
-    # -------- LINE CHART --------
-    st.markdown("### 📈 Line Chart")
-    st.line_chart(df[["ph", "cod", "tds", "temperature"]])
+    for param in ["ph", "cod", "tds"]:
+        st.markdown(f"### 📈 {param.upper()} Trend")
 
-    # -------- BAR CHART --------
-    st.markdown("### 📊 Bar Chart (Latest Readings)")
-
-    latest_values = df.iloc[-1][["ph", "cod", "tds", "temperature"]]
-
-    bar_df = pd.DataFrame({
-        "Parameter": latest_values.index,
-        "Value": latest_values.values
-    })
-
-    st.bar_chart(bar_df.set_index("Parameter"))
-
-    # -------- PIE CHART --------
-    st.markdown("### 🥧 Pie Chart (Latest Distribution)")
-
-    import matplotlib.pyplot as plt
-
-    fig, ax = plt.subplots()
-    ax.pie(
-        latest_values,
-        labels=latest_values.index,
-        autopct="%1.1f%%"
-    )
-    ax.set_title("Sensor Value Distribution")
-
-    st.pyplot(fig)
+        try:
+            df[f"{param}_sel"] = df[param].apply(lambda x: x.get(data_type, None))
+            st.line_chart(df[f"{param}_sel"])
+        except:
+            st.warning(f"{param} data not available")
 
 else:
-    st.info("No historical data available yet.")
+    st.info("No data available for selected company")
