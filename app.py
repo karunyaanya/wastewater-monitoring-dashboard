@@ -14,6 +14,7 @@ st.set_page_config(
 
 st.title("💧 Wastewater Monitoring Dashboard")
 
+
 # ------------------ FIREBASE INIT ------------------
 if not firebase_admin._apps:
     firebase_dict = json.loads(os.environ["FIREBASE_KEY"])
@@ -27,16 +28,45 @@ if not firebase_admin._apps:
         },
     )
 
+    # ------------------ LOCATION SELECT ------------------
+st.subheader("🌍 Select Location")
+
+country = st.selectbox("Country", ["India"])
+
+states_ref = db.reference("states")
+states_data = states_ref.get()
+
+selected_state = None
+selected_company = None
+load_data = False
+
+if states_data:
+    states = list(states_data.keys())
+    selected_state = st.selectbox("State", ["Select State"] + states)
+
+    if selected_state != "Select State":
+        companies = list(states_data[selected_state].keys())
+        selected_company = st.selectbox("Company", ["Select Company"] + companies)
+
+        if selected_company != "Select Company":
+            load_data = st.button("✅ Load Data")
+else:
+    st.error("No states found in database")
+
+
 # ------------------ FETCH DATA ------------------
-ref = db.reference("readings")
-data = ref.get()
-st.write("DEBUG DATA:", data)
 df = pd.DataFrame()
 
-if data:
-    df = pd.DataFrame(data).T
-    df["timestamp"] = pd.to_datetime(df.index.astype(int), unit="s")
-    df = df.sort_values("timestamp")
+if load_data:
+    ref = db.reference(f"states/{selected_state}/{selected_company}/readings")
+    data = ref.get()
+
+    if data:
+        df = pd.DataFrame(data).T
+        df["timestamp"] = pd.to_datetime(df.index.astype(int), unit="s")
+        df = df.sort_values("timestamp")
+    else:
+        st.warning("No readings found for this company")
 
    # from datetime import datetime, timedelta
     #now = datetime.now()
