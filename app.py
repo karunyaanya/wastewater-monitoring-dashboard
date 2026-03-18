@@ -144,31 +144,29 @@ if not df.empty:
 
                         st.bar_chart(bar_df)
 
-                    # -------- PIE --------
-                    with col3:
-                        st.markdown("🥧 Pie")
+                   # -------- PIE --------
+with col3:
+    st.markdown("🥧 Pie")
 
-                        pie_vals = pd.to_numeric(latest_vals, errors="coerce")
-                        pie_vals = pie_vals.dropna()
-                        pie_vals = pie_vals[pie_vals > 0]
+    pie_vals = pd.to_numeric(latest_vals, errors="coerce")
 
-                        if len(pie_vals) > 0:
-                            fig, ax = plt.subplots()
-                            ax.pie(
-                                pie_vals.values,
-                                labels=pie_vals.index,
-                                autopct="%1.1f%%"
-                            )
-                            ax.set_title(param.upper())
-                            st.pyplot(fig)
-                        else:
-                            st.info("No valid data")
+    # clean data
+    pie_vals = pie_vals.dropna()
+    pie_vals = pie_vals[pie_vals > 0]
 
-                else:
-                    st.warning("No usable data")
+    # STRICT CHECK (IMPORTANT)
+    if len(pie_vals) >= 2 and pie_vals.sum() > 0:
 
-        else:
-            st.warning(f"{param.upper()} missing")
+        fig, ax = plt.subplots()
 
-else:
-    st.info("No data available")
+        ax.pie(
+            pie_vals.values,
+            labels=pie_vals.index,
+            autopct="%1.1f%%"
+        )
+
+        ax.set_title(param.upper())
+        st.pyplot(fig)
+
+    else:
+        st.info("Not enough valid data for pie chart")
