@@ -58,13 +58,23 @@ if selected_state and selected_company and selected_company != "Select Company":
 
     if data:
         df = pd.DataFrame(data).T
-        df["timestamp"] = pd.to_datetime(df.index.astype(int), unit="s")
+
+        # Convert timestamp safely
+        try:
+            df["timestamp"] = pd.to_datetime(df.index.astype(int), unit="s")
+        except:
+            st.error("Invalid timestamp format")
+            st.stop()
+
         df = df.sort_values("timestamp")
 
-        # -------- 24 HOURS FILTER --------
-       # now = datetime.now()
-        #last_24 = now - timedelta(hours=24)
-        #df = df[df["timestamp"] >= last_24]
+        # ------------------ OPTIONAL FILTER ------------------
+        use_filter = st.checkbox("Show only last 24 hours", value=False)
+
+        if use_filter:
+            now = datetime.now()
+            last_24 = now - timedelta(hours=24)
+            df = df[df["timestamp"] >= last_24]
 
     else:
         st.warning("No readings found")
@@ -72,11 +82,18 @@ if selected_state and selected_company and selected_company != "Select Company":
 # ------------------ MAIN LOGIC ------------------
 if not df.empty:
 
+    # ------------------ SAFE LATEST ------------------
+    if len(df) > 0:
+        latest = df.iloc[-1]
+    else:
+        st.warning("No recent data found")
+        st.stop()
+
+    st.caption(f"Last Updated: {latest.name}")
+
     # ------------------ SELECT TYPE ------------------
     st.subheader("⚙️ Select Data Type")
     data_type = st.selectbox("Choose Data", ["primary", "secondary", "tertiary"])
-
-    latest = df.iloc[-1]
 
     # ------------------ PARAMETERS ------------------
     parameters = [
@@ -91,9 +108,10 @@ if not df.empty:
     table_data = []
 
     for i, param in enumerate(parameters, start=1):
-        try:
+
+        if param in latest and isinstance(latest[param], dict):
             value = latest[param].get(data_type, "NA")
-        except:
+        else:
             value = "NA"
 
         table_data.append({
@@ -115,11 +133,18 @@ if not df.empty:
     for param in ["ph", "cod", "tds"]:
         st.markdown(f"### 📈 {param.upper()} Trend")
 
-        try:
-            df[f"{param}_sel"] = df[param].apply(lambda x: x.get(data_type, None))
+        if param in df.columns:
+            df[f"{param}_sel"] = df[param].apply(
+                lambda x: x.get(data_type, None) if isinstance(x, dict) else None
+            )
+
             st.line_chart(df[f"{param}_sel"])
-        except:
-            st.warning(f"{param} data not available")
+        else:
+            st.warning(f"{param.upper()} data not available")
+
+    # ------------------ DEBUG (REMOVE LATER) ------------------
+    with st.expander("🔍 Debug Data"):
+        st.write(df.tail())
 
 else:
     st.info("No data available for selected company")
