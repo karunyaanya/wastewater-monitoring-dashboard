@@ -116,32 +116,40 @@ if not df.empty:
     st.dataframe(pd.DataFrame(table_data), use_container_width=True)
 
     # ------------------ CHARTS ------------------
-    st.subheader("📊 Parameter Trends")
+    st.subheader("📊 Parameter Dashboard")
 
-    df = df.set_index("timestamp")
+df = df.set_index("timestamp")
 
-    for param in parameters:
+for param in parameters:
 
-        if param in df.columns:
+    if param in df.columns:
 
-            st.markdown(f"## 📌 {param.upper()}")
+        st.markdown(f"## 📌 {param.upper()}")
 
-            # Extract values safely
-            df[f"{param}_primary"] = df[param].apply(lambda x: safe_get(x, "primary"))
-            df[f"{param}_secondary"] = df[param].apply(lambda x: safe_get(x, "secondary"))
-            df[f"{param}_tertiary"] = df[param].apply(lambda x: safe_get(x, "tertiary"))
+        # Extract values
+        df[f"{param}_primary"] = df[param].apply(lambda x: safe_get(x, "primary"))
+        df[f"{param}_secondary"] = df[param].apply(lambda x: safe_get(x, "secondary"))
+        df[f"{param}_tertiary"] = df[param].apply(lambda x: safe_get(x, "tertiary"))
 
-            chart_df = df[
-                [f"{param}_primary", f"{param}_secondary", f"{param}_tertiary"]
-            ].dropna(how="all")
+        chart_df = df[
+            [f"{param}_primary", f"{param}_secondary", f"{param}_tertiary"]
+        ].dropna(how="all")
 
-            if not chart_df.empty:
+        if not chart_df.empty:
 
-                # -------- LINE --------
+            # 👉 CREATE 3 COLUMNS
+            col1, col2, col3 = st.columns(3)
+
+            # -------- LINE --------
+            with col1:
+                st.markdown("**📈 Line**")
                 st.line_chart(chart_df)
 
-                # -------- BAR --------
+            # -------- BAR --------
+            with col2:
+                st.markdown("**📊 Bar**")
                 latest_vals = chart_df.iloc[-1]
+
                 bar_df = pd.DataFrame({
                     "Type": ["Primary", "Secondary", "Tertiary"],
                     "Value": latest_vals.values
@@ -149,26 +157,28 @@ if not df.empty:
 
                 st.bar_chart(bar_df)
 
-                # -------- PIE --------
+            # -------- PIE --------
+            with col3:
+                st.markdown("**🥧 Pie**")
+
                 pie_vals = pd.to_numeric(latest_vals, errors='coerce').dropna()
 
                 if len(pie_vals) > 0:
                     fig, ax = plt.subplots()
+
                     ax.pie(
                         pie_vals.values,
                         labels=pie_vals.index,
                         autopct="%1.1f%%"
                     )
+
                     ax.set_title(param.upper())
                     st.pyplot(fig)
                 else:
-                    st.warning("No valid numeric data for pie chart")
-
-            else:
-                st.warning("No usable data")
+                    st.warning("No valid data")
 
         else:
-            st.warning(f"{param.upper()} missing")
+            st.warning("No usable data")
 
-else:
-    st.info("No data available")
+    else:
+        st.warning(f"{param.upper()} missing")
