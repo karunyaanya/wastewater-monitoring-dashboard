@@ -28,7 +28,7 @@ if not firebase_admin._apps:
         },
     )
 
-# ------------------ LOCATION SELECT ------------------
+# ------------------ LOCATION ------------------
 st.subheader("🌍 Select Location")
 
 states_data = db.reference("states").get()
@@ -57,15 +57,11 @@ if selected_state and selected_company and selected_company != "Select Company":
 
     if data:
         df = pd.DataFrame(data).T
-
         df["timestamp"] = pd.to_datetime(df.index.astype(int), unit="s")
         df = df.sort_values("timestamp")
 
-        use_filter = st.checkbox("Show only last 24 hours", value=False)
-
-        if use_filter:
-            now = datetime.now()
-            df = df[df["timestamp"] >= now - timedelta(hours=24)]
+        if st.checkbox("Show last 24 hours"):
+            df = df[df["timestamp"] >= datetime.now() - timedelta(hours=24)]
 
     else:
         st.warning("No readings found")
@@ -99,86 +95,80 @@ if not df.empty:
         "hardness", "chlorine"
     ]
 
-    table_data = []
-
-    for i, param in enumerate(parameters, start=1):
-        if param in latest and isinstance(latest[param], dict):
-            value = latest[param].get(data_type, "NA")
+    table = []
+    for i, p in enumerate(parameters, 1):
+        if p in latest and isinstance(latest[p], dict):
+            val = latest[p].get(data_type, "NA")
         else:
-            value = "NA"
+            val = "NA"
 
-        table_data.append({
-            "Sl.No": i,
-            "Parameter": param.upper(),
-            "Value": value
-        })
+        table.append({"Sl.No": i, "Parameter": p.upper(), "Value": val})
 
-    st.dataframe(pd.DataFrame(table_data), use_container_width=True)
+    st.dataframe(pd.DataFrame(table), use_container_width=True)
 
     # ------------------ CHARTS ------------------
     st.subheader("📊 Parameter Dashboard")
 
-df = df.set_index("timestamp")
+    df = df.set_index("timestamp")
 
-for param in parameters:
+    for param in parameters:
 
-    if param in df.columns:
+        if param in df.columns:
 
-        st.markdown(f"## 📌 {param.upper()}")
+            with st.expander(f"📌 {param.upper()}"):
 
-        # Extract values
-        df[f"{param}_primary"] = df[param].apply(lambda x: safe_get(x, "primary"))
-        df[f"{param}_secondary"] = df[param].apply(lambda x: safe_get(x, "secondary"))
-        df[f"{param}_tertiary"] = df[param].apply(lambda x: safe_get(x, "tertiary"))
+                df[f"{param}_p"] = df[param].apply(lambda x: safe_get(x, "primary"))
+                df[f"{param}_s"] = df[param].apply(lambda x: safe_get(x, "secondary"))
+                df[f"{param}_t"] = df[param].apply(lambda x: safe_get(x, "tertiary"))
 
-        chart_df = df[
-            [f"{param}_primary", f"{param}_secondary", f"{param}_tertiary"]
-        ].dropna(how="all")
+                chart_df = df[[f"{param}_p", f"{param}_s", f"{param}_t"]].dropna(how="all")
 
-        if not chart_df.empty:
+                if not chart_df.empty:
 
-            # 👉 CREATE 3 COLUMNS
-            col1, col2, col3 = st.columns(3)
+                    col1, col2, col3 = st.columns(3)
 
-            # -------- LINE --------
-            with col1:
-                st.markdown("**📈 Line**")
-                st.line_chart(chart_df)
+                    # -------- LINE --------
+                    with col1:
+                        st.markdown("📈 Line")
+                        st.line_chart(chart_df)
 
-            # -------- BAR --------
-            with col2:
-                st.markdown("**📊 Bar**")
-                latest_vals = chart_df.iloc[-1]
+                    # -------- BAR --------
+                    with col2:
+                        st.markdown("📊 Bar")
+                        latest_vals = chart_df.iloc[-1]
 
-                bar_df = pd.DataFrame({
-                    "Type": ["Primary", "Secondary", "Tertiary"],
-                    "Value": latest_vals.values
-                }).set_index("Type")
+                        bar_df = pd.DataFrame({
+                            "Type": ["Primary", "Secondary", "Tertiary"],
+                            "Value": latest_vals.values
+                        }).set_index("Type")
 
-                st.bar_chart(bar_df)
+                        st.bar_chart(bar_df)
 
-            # -------- PIE --------
-            with col3:
-                st.markdown("**🥧 Pie**")
+                    # -------- PIE --------
+                    with col3:
+                        st.markdown("🥧 Pie")
 
-                pie_vals = pd.to_numeric(latest_vals, errors='coerce').dropna()
+                        pie_vals = pd.to_numeric(latest_vals, errors="coerce")
+                        pie_vals = pie_vals.dropna()
+                        pie_vals = pie_vals[pie_vals > 0]
 
-                if len(pie_vals) > 0:
-                    fig, ax = plt.subplots()
+                        if len(pie_vals) > 0:
+                            fig, ax = plt.subplots()
+                            ax.pie(
+                                pie_vals.values,
+                                labels=pie_vals.index,
+                                autopct="%1.1f%%"
+                            )
+                            ax.set_title(param.upper())
+                            st.pyplot(fig)
+                        else:
+                            st.info("No valid data")
 
-                    ax.pie(
-                        pie_vals.values,
-                        labels=pie_vals.index,
-                        autopct="%1.1f%%"
-                    )
-
-                    ax.set_title(param.upper())
-                    st.pyplot(fig)
                 else:
-                    st.warning("No valid data")
+                    st.warning("No usable data")
 
         else:
-            st.warning("No usable data")
+            st.warning(f"{param.upper()} missing")
 
-    else:
-        st.warning(f"{param.upper()} missing")
+else:
+    st.info("No data available")
