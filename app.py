@@ -126,7 +126,7 @@ if not df.empty:
 
             st.markdown(f"## 📌 {param.upper()}")
 
-            # Extract numeric values
+            # Extract values safely
             df[f"{param}_primary"] = df[param].apply(lambda x: safe_get(x, "primary"))
             df[f"{param}_secondary"] = df[param].apply(lambda x: safe_get(x, "secondary"))
             df[f"{param}_tertiary"] = df[param].apply(lambda x: safe_get(x, "tertiary"))
@@ -150,19 +150,19 @@ if not df.empty:
                 st.bar_chart(bar_df)
 
                 # -------- PIE --------
-                pie_vals = latest_vals.dropna()
+                pie_vals = pd.to_numeric(latest_vals, errors='coerce').dropna()
 
-                if not pie_vals.empty:
+                if len(pie_vals) > 0:
                     fig, ax = plt.subplots()
                     ax.pie(
                         pie_vals.values,
-                        labels=["Primary", "Secondary", "Tertiary"][:len(pie_vals)],
+                        labels=pie_vals.index,
                         autopct="%1.1f%%"
                     )
                     ax.set_title(param.upper())
                     st.pyplot(fig)
                 else:
-                    st.warning("No valid data for pie")
+                    st.warning("No valid numeric data for pie chart")
 
             else:
                 st.warning("No usable data")
