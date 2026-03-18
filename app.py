@@ -62,9 +62,9 @@ if selected_state and selected_company and selected_company != "Select Company":
         df = df.sort_values("timestamp")
 
         # -------- 24 HOURS FILTER --------
-        now = datetime.now()
-        last_24 = now - timedelta(hours=24)
-        df = df[df["timestamp"] >= last_24]
+       # now = datetime.now()
+        #last_24 = now - timedelta(hours=24)
+        #df = df[df["timestamp"] >= last_24]
 
     else:
         st.warning("No readings found")
