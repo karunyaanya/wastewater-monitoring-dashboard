@@ -5,6 +5,7 @@ import pandas as pd
 import firebase_admin
 from firebase_admin import credentials, db
 from datetime import datetime, timedelta
+import matplotlib.pyplot as plt
 
 # ------------------ PAGE CONFIG ------------------
 st.set_page_config(
@@ -30,23 +31,21 @@ if not firebase_admin._apps:
 # ------------------ LOCATION SELECT ------------------
 st.subheader("🌍 Select Location")
 
-country = st.selectbox("Country", ["India"])
-
-states_ref = db.reference("states")
-states_data = states_ref.get()
+states_data = db.reference("states").get()
 
 selected_state = None
 selected_company = None
 
 if states_data:
-    states = list(states_data.keys())
-    selected_state = st.selectbox("State", ["Select State"] + states)
+    selected_state = st.selectbox("State", ["Select State"] + list(states_data.keys()))
 
     if selected_state != "Select State":
-        companies = list(states_data[selected_state].keys())
-        selected_company = st.selectbox("Company", ["Select Company"] + companies)
+        selected_company = st.selectbox(
+            "Company",
+            ["Select Company"] + list(states_data[selected_state].keys())
+        )
 else:
-    st.error("No states found in database")
+    st.error("No states found")
 
 # ------------------ FETCH DATA ------------------
 df = pd.DataFrame()
@@ -59,43 +58,39 @@ if selected_state and selected_company and selected_company != "Select Company":
     if data:
         df = pd.DataFrame(data).T
 
-        # Convert timestamp safely
-        try:
-            df["timestamp"] = pd.to_datetime(df.index.astype(int), unit="s")
-        except:
-            st.error("Invalid timestamp format")
-            st.stop()
-
+        df["timestamp"] = pd.to_datetime(df.index.astype(int), unit="s")
         df = df.sort_values("timestamp")
 
-        # ------------------ OPTIONAL FILTER ------------------
         use_filter = st.checkbox("Show only last 24 hours", value=False)
 
         if use_filter:
             now = datetime.now()
-            last_24 = now - timedelta(hours=24)
-            df = df[df["timestamp"] >= last_24]
+            df = df[df["timestamp"] >= now - timedelta(hours=24)]
 
     else:
         st.warning("No readings found")
 
-# ------------------ MAIN LOGIC ------------------
+# ------------------ SAFE FUNCTION ------------------
+def safe_get(x, key):
+    if isinstance(x, dict):
+        val = x.get(key)
+        try:
+            return float(val)
+        except:
+            return None
+    return None
+
+# ------------------ MAIN ------------------
 if not df.empty:
 
-    # ------------------ SAFE LATEST ------------------
-    if len(df) > 0:
-        latest = df.iloc[-1]
-    else:
-        st.warning("No recent data found")
-        st.stop()
-
+    latest = df.iloc[-1]
     st.caption(f"Last Updated: {latest.name}")
 
-    # ------------------ SELECT TYPE ------------------
-    st.subheader("⚙️ Select Data Type")
+    # ------------------ TABLE ------------------
+    st.subheader("📋 Water Analysis Report")
+
     data_type = st.selectbox("Choose Data", ["primary", "secondary", "tertiary"])
 
-    # ------------------ PARAMETERS ------------------
     parameters = [
         "ph", "colour", "odour", "turbidity", "conductivity",
         "tds", "suspended_solids", "calcium", "magnesium",
@@ -104,11 +99,9 @@ if not df.empty:
         "hardness", "chlorine"
     ]
 
-    # ------------------ TABLE ------------------
     table_data = []
 
     for i, param in enumerate(parameters, start=1):
-
         if param in latest and isinstance(latest[param], dict):
             value = latest[param].get(data_type, "NA")
         else:
@@ -120,76 +113,62 @@ if not df.empty:
             "Value": value
         })
 
-    table_df = pd.DataFrame(table_data)
+    st.dataframe(pd.DataFrame(table_data), use_container_width=True)
 
-    st.subheader("📋 Water Analysis Report")
-    st.dataframe(table_df, use_container_width=True)
+    # ------------------ CHARTS ------------------
+    st.subheader("📊 Parameter Trends")
 
-   # ------------------ ALL PARAMETER CHARTS ------------------
-st.subheader("📊 All Parameter Trends (24H)")
+    df = df.set_index("timestamp")
 
-df = df.set_index("timestamp")
+    for param in parameters:
 
-parameters = [
-    "ph", "colour", "odour", "turbidity", "conductivity",
-    "tds", "suspended_solids", "calcium", "magnesium",
-    "alkalinity_ph", "alkalinity_mo", "sulphate",
-    "chlorides", "silica", "iron", "cod", "bod",
-    "hardness", "chlorine"
-]
+        if param in df.columns:
 
-for param in parameters:
+            st.markdown(f"## 📌 {param.upper()}")
 
-    if param in df.columns:
+            # Extract numeric values
+            df[f"{param}_primary"] = df[param].apply(lambda x: safe_get(x, "primary"))
+            df[f"{param}_secondary"] = df[param].apply(lambda x: safe_get(x, "secondary"))
+            df[f"{param}_tertiary"] = df[param].apply(lambda x: safe_get(x, "tertiary"))
 
-        st.markdown(f"## 📌 {param.upper()}")
+            chart_df = df[
+                [f"{param}_primary", f"{param}_secondary", f"{param}_tertiary"]
+            ].dropna(how="all")
 
-        # -------- Extract Primary / Secondary / Tertiary --------
-        df[f"{param}_primary"] = df[param].apply(
-            lambda x: x.get("primary", None) if isinstance(x, dict) else None
-        )
-        df[f"{param}_secondary"] = df[param].apply(
-            lambda x: x.get("secondary", None) if isinstance(x, dict) else None
-        )
-        df[f"{param}_tertiary"] = df[param].apply(
-            lambda x: x.get("tertiary", None) if isinstance(x, dict) else None
-        )
+            if not chart_df.empty:
 
-        chart_df = df[[
-            f"{param}_primary",
-            f"{param}_secondary",
-            f"{param}_tertiary"
-        ]]
+                # -------- LINE --------
+                st.line_chart(chart_df)
 
-        # -------- LINE CHART --------
-        st.markdown("### 📈 Line Chart")
-        st.line_chart(chart_df)
+                # -------- BAR --------
+                latest_vals = chart_df.iloc[-1]
+                bar_df = pd.DataFrame({
+                    "Type": ["Primary", "Secondary", "Tertiary"],
+                    "Value": latest_vals.values
+                }).set_index("Type")
 
-        # -------- BAR CHART --------
-        st.markdown("### 📊 Bar Chart (Latest)")
+                st.bar_chart(bar_df)
 
-        latest_bar = chart_df.iloc[-1:].T
-        latest_bar.columns = ["Value"]
+                # -------- PIE --------
+                pie_vals = latest_vals.dropna()
 
-        st.bar_chart(latest_bar)
+                if not pie_vals.empty:
+                    fig, ax = plt.subplots()
+                    ax.pie(
+                        pie_vals.values,
+                        labels=["Primary", "Secondary", "Tertiary"][:len(pie_vals)],
+                        autopct="%1.1f%%"
+                    )
+                    ax.set_title(param.upper())
+                    st.pyplot(fig)
+                else:
+                    st.warning("No valid data for pie")
 
-        # -------- PIE CHART --------
-        st.markdown("### 🥧 Pie Chart (Latest Distribution)")
+            else:
+                st.warning("No usable data")
 
-        import matplotlib.pyplot as plt
+        else:
+            st.warning(f"{param.upper()} missing")
 
-        latest_values = chart_df.iloc[-1]
-
-        fig, ax = plt.subplots()
-        ax.pie(
-            latest_values.fillna(0),
-            labels=["Primary", "Secondary", "Tertiary"],
-            autopct="%1.1f%%"
-        )
-        ax.set_title(param.upper())
-
-        st.pyplot(fig)
-
-    else:
-        st.warning(f"{param.upper()} data not available")
-    
+else:
+    st.info("No data available")
