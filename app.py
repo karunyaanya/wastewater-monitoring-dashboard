@@ -125,26 +125,71 @@ if not df.empty:
     st.subheader("📋 Water Analysis Report")
     st.dataframe(table_df, use_container_width=True)
 
-    # ------------------ CHARTS ------------------
-    st.subheader("📊 24 Hour Trends")
+   # ------------------ ALL PARAMETER CHARTS ------------------
+st.subheader("📊 All Parameter Trends (24H)")
 
-    df = df.set_index("timestamp")
+df = df.set_index("timestamp")
 
-    for param in ["ph", "cod", "tds"]:
-        st.markdown(f"### 📈 {param.upper()} Trend")
+parameters = [
+    "ph", "colour", "odour", "turbidity", "conductivity",
+    "tds", "suspended_solids", "calcium", "magnesium",
+    "alkalinity_ph", "alkalinity_mo", "sulphate",
+    "chlorides", "silica", "iron", "cod", "bod",
+    "hardness", "chlorine"
+]
 
-        if param in df.columns:
-            df[f"{param}_sel"] = df[param].apply(
-                lambda x: x.get(data_type, None) if isinstance(x, dict) else None
-            )
+for param in parameters:
 
-            st.line_chart(df[f"{param}_sel"])
-        else:
-            st.warning(f"{param.upper()} data not available")
+    if param in df.columns:
 
-    # ------------------ DEBUG (REMOVE LATER) ------------------
-    with st.expander("🔍 Debug Data"):
-        st.write(df.tail())
+        st.markdown(f"## 📌 {param.upper()}")
 
-else:
-    st.info("No data available for selected company")
+        # -------- Extract Primary / Secondary / Tertiary --------
+        df[f"{param}_primary"] = df[param].apply(
+            lambda x: x.get("primary", None) if isinstance(x, dict) else None
+        )
+        df[f"{param}_secondary"] = df[param].apply(
+            lambda x: x.get("secondary", None) if isinstance(x, dict) else None
+        )
+        df[f"{param}_tertiary"] = df[param].apply(
+            lambda x: x.get("tertiary", None) if isinstance(x, dict) else None
+        )
+
+        chart_df = df[[
+            f"{param}_primary",
+            f"{param}_secondary",
+            f"{param}_tertiary"
+        ]]
+
+        # -------- LINE CHART --------
+        st.markdown("### 📈 Line Chart")
+        st.line_chart(chart_df)
+
+        # -------- BAR CHART --------
+        st.markdown("### 📊 Bar Chart (Latest)")
+
+        latest_bar = chart_df.iloc[-1:].T
+        latest_bar.columns = ["Value"]
+
+        st.bar_chart(latest_bar)
+
+        # -------- PIE CHART --------
+        st.markdown("### 🥧 Pie Chart (Latest Distribution)")
+
+        import matplotlib.pyplot as plt
+
+        latest_values = chart_df.iloc[-1]
+
+        fig, ax = plt.subplots()
+        ax.pie(
+            latest_values.fillna(0),
+            labels=["Primary", "Secondary", "Tertiary"],
+            autopct="%1.1f%%"
+        )
+        ax.set_title(param.upper())
+
+        st.pyplot(fig)
+
+    else:
+        st.warning(f"{param.upper()} data not available")
+    
