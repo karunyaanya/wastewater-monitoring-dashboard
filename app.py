@@ -125,38 +125,35 @@ if not df.empty:
 
                 if not chart_df.empty:
 
-                    col1, col2, col3 = st.columns(3)
+                 col1, col2, col3 = st.columns(3)
 
-                    # -------- LINE --------
-                    with col1:
-                        st.markdown("📈 Line")
-                        st.line_chart(chart_df)
+# -------- LINE --------
+with col1:
+    st.markdown("📈 Line")
+    st.line_chart(chart_df)
 
-                    # -------- BAR --------
-                    with col2:
-                        st.markdown("📊 Bar")
-                        latest_vals = chart_df.iloc[-1]
+# -------- BAR --------
+with col2:
+    st.markdown("📊 Bar")
+    latest_vals = chart_df.iloc[-1]
 
-                        bar_df = pd.DataFrame({
-                            "Type": ["Primary", "Secondary", "Tertiary"],
-                            "Value": latest_vals.values
-                        }).set_index("Type")
+    bar_df = pd.DataFrame({
+        "Type": ["Primary", "Secondary", "Tertiary"],
+        "Value": latest_vals.values
+    }).set_index("Type")
 
-                        st.bar_chart(bar_df)
+    st.bar_chart(bar_df)
 
-                   # -------- PIE --------
+# -------- PIE --------
 with col3:
     st.markdown("🥧 Pie")
 
     pie_vals = pd.to_numeric(latest_vals, errors="coerce")
 
-    # clean data
     pie_vals = pie_vals.dropna()
     pie_vals = pie_vals[pie_vals > 0]
 
-    # STRICT CHECK (IMPORTANT)
     if len(pie_vals) >= 2 and pie_vals.sum() > 0:
-
         fig, ax = plt.subplots()
 
         ax.pie(
@@ -167,6 +164,5 @@ with col3:
 
         ax.set_title(param.upper())
         st.pyplot(fig)
-
     else:
         st.info("Not enough valid data for pie chart")
