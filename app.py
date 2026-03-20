@@ -116,7 +116,7 @@ if not df.empty:
 
             with st.expander(f"📌 {param.upper()}"):
 
-                # 🔥 Create clean data (IMPORTANT FIX)
+                # ✅ Clean data per parameter
                 temp_df = pd.DataFrame()
                 temp_df["Primary"] = df[param].apply(lambda x: safe_get(x, "primary"))
                 temp_df["Secondary"] = df[param].apply(lambda x: safe_get(x, "secondary"))
@@ -125,19 +125,19 @@ if not df.empty:
                 temp_df = temp_df.fillna(0)
                 temp_df.index = df.index
 
-                # Debug (you can remove later)
-                st.write(temp_df.tail())
-
                 if not temp_df.empty:
 
                     col1, col2, col3 = st.columns(3)
-
                     latest_vals = temp_df.iloc[-1]
 
                     # 📈 LINE CHART
                     with col1:
                         st.markdown("📈 Line Chart")
-                        st.line_chart(temp_df)
+
+                        if len(temp_df) > 1:
+                            st.line_chart(temp_df)
+                        else:
+                            st.warning("⚠️ Not enough data for line chart")
 
                     # 📊 BAR CHART
                     with col2:
