@@ -69,9 +69,8 @@ if selected_state and selected_company and selected_company != "Select Company":
 # ------------------ SAFE FUNCTION ------------------
 def safe_get(x, key):
     if isinstance(x, dict):
-        val = x.get(key)
         try:
-            return float(val)
+            return float(x.get(key, 0))
         except:
             return 0
     return 0
@@ -117,28 +116,32 @@ if not df.empty:
 
             with st.expander(f"📌 {param.upper()}"):
 
-                # Convert to numeric safely
-                df[f"{param}_p"] = pd.to_numeric(df[param].apply(lambda x: safe_get(x, "primary")), errors='coerce')
-                df[f"{param}_s"] = pd.to_numeric(df[param].apply(lambda x: safe_get(x, "secondary")), errors='coerce')
-                df[f"{param}_t"] = pd.to_numeric(df[param].apply(lambda x: safe_get(x, "tertiary")), errors='coerce')
+                # 🔥 Create clean data (IMPORTANT FIX)
+                temp_df = pd.DataFrame()
+                temp_df["Primary"] = df[param].apply(lambda x: safe_get(x, "primary"))
+                temp_df["Secondary"] = df[param].apply(lambda x: safe_get(x, "secondary"))
+                temp_df["Tertiary"] = df[param].apply(lambda x: safe_get(x, "tertiary"))
 
-                chart_df = df[[f"{param}_p", f"{param}_s", f"{param}_t"]].fillna(0)
-                chart_df.columns = ["Primary", "Secondary", "Tertiary"]
+                temp_df = temp_df.fillna(0)
+                temp_df.index = df.index
 
-                if not chart_df.empty:
+                # Debug (you can remove later)
+                st.write(temp_df.tail())
+
+                if not temp_df.empty:
 
                     col1, col2, col3 = st.columns(3)
 
-                    latest_vals = chart_df.iloc[-1]
+                    latest_vals = temp_df.iloc[-1]
 
-                    # -------- LINE --------
+                    # 📈 LINE CHART
                     with col1:
-                        st.markdown("📈 Line")
-                        st.line_chart(chart_df)
+                        st.markdown("📈 Line Chart")
+                        st.line_chart(temp_df)
 
-                    # -------- BAR --------
+                    # 📊 BAR CHART
                     with col2:
-                        st.markdown("📊 Bar")
+                        st.markdown("📊 Bar Chart")
 
                         bar_df = pd.DataFrame({
                             "Type": ["Primary", "Secondary", "Tertiary"],
@@ -147,22 +150,19 @@ if not df.empty:
 
                         st.bar_chart(bar_df)
 
-                    # -------- PIE --------
+                    # 🥧 PIE CHART
                     with col3:
-                        st.markdown("🥧 Pie")
+                        st.markdown("🥧 Pie Chart")
 
-                        pie_vals = pd.to_numeric(latest_vals, errors="coerce").fillna(0)
-
-                        if pie_vals.sum() > 0:
+                        if latest_vals.sum() > 0:
                             fig, ax = plt.subplots()
 
                             ax.pie(
-                                pie_vals.values,
+                                latest_vals.values,
                                 labels=["Primary", "Secondary", "Tertiary"],
                                 autopct="%1.1f%%"
                             )
 
-                            ax.set_title(param.upper())
                             st.pyplot(fig)
                         else:
-                            st.info("Not enough valid data")
+                            st.warning("No valid data")
