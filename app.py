@@ -127,6 +127,9 @@ if not df.empty:
                 if not chart_df.empty:
 
                     col1, col2, col3 = st.columns(3)
+                    
+                    latest_vals = chart_df.iloc[-1]
+
 
                     # -------- LINE --------
                     with col1:
