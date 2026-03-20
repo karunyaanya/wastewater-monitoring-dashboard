@@ -73,8 +73,8 @@ def safe_get(x, key):
         try:
             return float(val)
         except:
-            return None
-    return None
+            return 0   # ✅ FIXED
+    return 0
 
 # ------------------ MAIN ------------------
 if not df.empty:
@@ -121,48 +121,48 @@ if not df.empty:
                 df[f"{param}_s"] = df[param].apply(lambda x: safe_get(x, "secondary"))
                 df[f"{param}_t"] = df[param].apply(lambda x: safe_get(x, "tertiary"))
 
-                chart_df = df[[f"{param}_p", f"{param}_s", f"{param}_t"]].dropna(how="all")
+                # ✅ FIX: removed dropna
+                chart_df = df[[f"{param}_p", f"{param}_s", f"{param}_t"]]
 
                 if not chart_df.empty:
 
-                 col1, col2, col3 = st.columns(3)
+                    col1, col2, col3 = st.columns(3)
 
-# -------- LINE --------
-with col1:
-    st.markdown("📈 Line")
-    st.line_chart(chart_df)
+                    # -------- LINE --------
+                    with col1:
+                        st.markdown("📈 Line")
+                        st.line_chart(chart_df)
 
-# -------- BAR --------
-with col2:
-    st.markdown("📊 Bar")
-    latest_vals = chart_df.iloc[-1]
+                    # -------- BAR --------
+                    with col2:
+                        st.markdown("📊 Bar")
+                        latest_vals = chart_df.iloc[-1]
 
-    bar_df = pd.DataFrame({
-        "Type": ["Primary", "Secondary", "Tertiary"],
-        "Value": latest_vals.values
-    }).set_index("Type")
+                        bar_df = pd.DataFrame({
+                            "Type": ["Primary", "Secondary", "Tertiary"],
+                            "Value": latest_vals.values
+                        }).set_index("Type")
 
-    st.bar_chart(bar_df)
+                        st.bar_chart(bar_df)
 
-# -------- PIE --------
-with col3:
-    st.markdown("🥧 Pie")
+                    # -------- PIE --------
+                    with col3:
+                        st.markdown("🥧 Pie")
 
-    pie_vals = pd.to_numeric(latest_vals, errors="coerce")
+                        pie_vals = pd.to_numeric(latest_vals, errors="coerce")
+                        pie_vals = pie_vals.dropna()
+                        pie_vals = pie_vals[pie_vals > 0]
 
-    pie_vals = pie_vals.dropna()
-    pie_vals = pie_vals[pie_vals > 0]
+                        if len(pie_vals) >= 2 and pie_vals.sum() > 0:
+                            fig, ax = plt.subplots()
 
-    if len(pie_vals) >= 2 and pie_vals.sum() > 0:
-        fig, ax = plt.subplots()
+                            ax.pie(
+                                pie_vals.values,
+                                labels=pie_vals.index,
+                                autopct="%1.1f%%"
+                            )
 
-        ax.pie(
-            pie_vals.values,
-            labels=pie_vals.index,
-            autopct="%1.1f%%"
-        )
-
-        ax.set_title(param.upper())
-        st.pyplot(fig)
-    else:
-        st.info("Not enough valid data for pie chart")
+                            ax.set_title(param.upper())
+                            st.pyplot(fig)
+                        else:
+                            st.info("Not enough valid data for pie chart")
