@@ -13,6 +13,9 @@ st.set_page_config(
     page_icon="💧",
     layout="wide"
 )
+# ✅ ADD IMAGE HERE
+st.image("logo.png", use_container_width=True)
+
 st.title("💧 RENEIRDE TECHNOLOGIES PVT LTD")
 st.title("Wastewater Monitoring Dashboard")
 
@@ -84,7 +87,8 @@ if not df.empty:
     # ------------------ TABLE ------------------
     st.subheader("📋 Water Analysis Report")
 
-    data_type = st.selectbox("Choose Data", ["primary", "secondary", "tertiary"])
+    # 🔥 REPLACED DROPDOWN WITH TABS
+    tab1, tab2, tab3 = st.tabs(["Primary", "Secondary", "Tertiary"])
 
     parameters = [
         "ph", "colour", "odour", "turbidity", "conductivity",
@@ -94,16 +98,26 @@ if not df.empty:
         "hardness", "chlorine"
     ]
 
-    table = []
-    for i, p in enumerate(parameters, 1):
-        if p in latest and isinstance(latest[p], dict):
-            val = latest[p].get(data_type, "NA")
-        else:
-            val = "NA"
+    def generate_table(data_type):
+        table = []
+        for i, p in enumerate(parameters, 1):
+            if p in latest and isinstance(latest[p], dict):
+                val = latest[p].get(data_type, "NA")
+            else:
+                val = "NA"
 
-        table.append({"Sl.No": i, "Parameter": p.upper(), "Value": val})
+            table.append({"Sl.No": i, "Parameter": p.upper(), "Value": val})
 
-    st.dataframe(pd.DataFrame(table), use_container_width=True)
+        st.dataframe(pd.DataFrame(table), use_container_width=True)
+
+    with tab1:
+        generate_table("primary")
+
+    with tab2:
+        generate_table("secondary")
+
+    with tab3:
+        generate_table("tertiary")
 
     # ------------------ CHARTS ------------------
     st.subheader("📊 Parameter Dashboard")
@@ -116,7 +130,6 @@ if not df.empty:
 
             with st.expander(f"📌 {param.upper()}"):
 
-                # ✅ Clean data per parameter
                 temp_df = pd.DataFrame()
                 temp_df["Primary"] = df[param].apply(lambda x: safe_get(x, "primary"))
                 temp_df["Secondary"] = df[param].apply(lambda x: safe_get(x, "secondary"))
@@ -133,11 +146,10 @@ if not df.empty:
                     # 📈 LINE CHART
                     with col1:
                         st.markdown("📈 Line Chart")
-
                         if len(temp_df) > 1:
                             st.line_chart(temp_df)
                         else:
-                            st.warning("⚠️ Not enough data for line chart")
+                            st.warning("⚠️ Not enough data")
 
                     # 📊 BAR CHART
                     with col2:
