@@ -14,14 +14,16 @@ st.set_page_config(
     layout="wide"
 )
 # ✅ ADD IMAGE HERE
-col1, col2 = st.columns([1, 6])
+# ✅ CENTER BIG LOGO
+st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
 
+st.image("logo.png", width=350)
 
-with col1:
-    st.image("logo.png", width=500)
+st.markdown("</div>", unsafe_allow_html=True)
 
-with col2:
-    st.title("Wastewater Monitoring Dashboard")
+# ✅ TITLE BELOW
+st.title("💧 Wastewater Monitoring Dashboard")
+
 
 # ------------------ FIREBASE INIT ------------------
 if not firebase_admin._apps:
