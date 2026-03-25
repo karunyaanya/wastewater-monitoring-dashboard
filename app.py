@@ -14,25 +14,27 @@ st.set_page_config(
     layout="wide"
 )
 
-# 🔥 REMOVE TOP SPACE COMPLETELY
+# 🔥 REMOVE TOP SPACE + FORCE CENTER + FIX IMAGE CUT
 st.markdown("""
     <style>
         .block-container {
             padding-top: 0rem;
+            text-align: center;
+        }
+        img {
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# 🔥 CENTER BRAND LOGO (TOP)
-st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+# 🔥 CENTER LOGO (FULL VISIBLE, NO CUT)
+st.image("logo.png", width=300)
 
-st.image("logo.png", width=320)
-
-st.markdown("</div>", unsafe_allow_html=True)
-
-# 🔥 TITLE BELOW (CENTER)
+# 🔥 TITLE
 st.markdown(
-    "<h1 style='text-align: center;'>💧 Wastewater Monitoring Dashboard</h1>",
+    "<h1 style='text-align:center; margin-top:-10px;'>Wastewater Monitoring Dashboard</h1>",
     unsafe_allow_html=True
 )
 
