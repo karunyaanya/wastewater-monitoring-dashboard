@@ -22,7 +22,7 @@ st.markdown("""
     padding-top: 0rem;
 }
 
-/* CENTER LOGO PERFECTLY */
+/* CENTER LOGO */
 .center-logo {
     display: flex;
     justify-content: center;
@@ -30,14 +30,8 @@ st.markdown("""
     width: 100%;
 }
 
-/* LOGO STYLE */
 .center-logo img {
     width: 220px;
-    transition: transform 0.3s ease;
-}
-
-.center-logo img:hover {
-    transform: scale(1.05);
 }
 
 /* CENTER TITLE */
@@ -64,7 +58,7 @@ st.markdown(f"""
 
 # ------------------ TITLE ------------------
 st.markdown(
-    "<h1 class='center-title'>Wastewater Monitoring Dashboard</h1>",
+    "<h1 class='center-title'>💧 Wastewater Monitoring Dashboard</h1>",
     unsafe_allow_html=True
 )
 
@@ -133,10 +127,8 @@ if not df.empty:
     latest = df.iloc[-1]
     st.caption(f"Last Updated: {latest.name}")
 
-    # ------------------ TABLE ------------------
+    # ------------------ COMBINED TABLE ------------------
     st.subheader("📋 Water Analysis Report")
-
-    tab1, tab2, tab3 = st.tabs(["Primary", "Secondary", "Tertiary"])
 
     parameters = [
         "ph", "colour", "odour", "turbidity", "conductivity",
@@ -146,26 +138,28 @@ if not df.empty:
         "hardness", "chlorine"
     ]
 
-    def generate_table(data_type):
-        table = []
-        for i, p in enumerate(parameters, 1):
-            if p in latest and isinstance(latest[p], dict):
-                val = latest[p].get(data_type, "NA")
-            else:
-                val = "NA"
+    table = []
 
-            table.append({"Sl.No": i, "Parameter": p.upper(), "Value": val})
+    for i, p in enumerate(parameters, 1):
 
-        st.dataframe(pd.DataFrame(table), use_container_width=True)
+        if p in latest and isinstance(latest[p], dict):
+            primary = latest[p].get("primary", "NA")
+            secondary = latest[p].get("secondary", "NA")
+            tertiary = latest[p].get("tertiary", "NA")
+        else:
+            primary = secondary = tertiary = "NA"
 
-    with tab1:
-        generate_table("primary")
+        table.append({
+            "Sl.No": i,
+            "Parameter": p.upper(),
+            "Primary": primary,
+            "Secondary": secondary,
+            "Tertiary": tertiary
+        })
 
-    with tab2:
-        generate_table("secondary")
+    df_table = pd.DataFrame(table)
 
-    with tab3:
-        generate_table("tertiary")
+    st.dataframe(df_table, use_container_width=True)
 
     # ------------------ CHARTS ------------------
     st.subheader("📊 Parameter Dashboard")
@@ -191,38 +185,26 @@ if not df.empty:
                     col1, col2, col3 = st.columns(3)
                     latest_vals = temp_df.iloc[-1]
 
-                    # 📈 LINE CHART
                     with col1:
                         st.markdown("📈 Line Chart")
                         if len(temp_df) > 1:
                             st.line_chart(temp_df)
-                        else:
-                            st.warning("⚠️ Not enough data")
 
-                    # 📊 BAR CHART
                     with col2:
                         st.markdown("📊 Bar Chart")
-
                         bar_df = pd.DataFrame({
                             "Type": ["Primary", "Secondary", "Tertiary"],
                             "Value": latest_vals.values
                         }).set_index("Type")
-
                         st.bar_chart(bar_df)
 
-                    # 🥧 PIE CHART
                     with col3:
                         st.markdown("🥧 Pie Chart")
-
                         if latest_vals.sum() > 0:
                             fig, ax = plt.subplots()
-
                             ax.pie(
                                 latest_vals.values,
                                 labels=["Primary", "Secondary", "Tertiary"],
                                 autopct="%1.1f%%"
                             )
-
                             st.pyplot(fig)
-                        else:
-                            st.warning("No valid data")
