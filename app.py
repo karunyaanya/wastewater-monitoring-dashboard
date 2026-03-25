@@ -17,16 +17,20 @@ st.set_page_config(
 # 🔥 REMOVE TOP SPACE + FORCE CENTER + FIX IMAGE CUT
 st.markdown("""
     <style>
-        .block-container {
-            padding-top: 0rem;
-            text-align: center;
-        }
-        img {
-            margin-left: auto;
-            margin-right: auto;
-            display: block;
-        }
-    </style>
+    .block-container {
+        padding-top: 0rem;
+        text-align: center;
+    }
+
+    /* Center image properly */
+    .center-logo {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+</style>
 """, unsafe_allow_html=True)
 
 # 🔥 CENTER LOGO (FULL VISIBLE, NO CUT)
@@ -34,7 +38,7 @@ st.image("logo.png", width=300)
 
 # 🔥 TITLE
 st.markdown(
-    "<h1 style='text-align:center; margin-top:-10px;'>Wastewater Monitoring Dashboard</h1>",
+    "<h1 style='text-align:center; margin-top:10px;'>Wastewater Monitoring Dashboard</h1>",
     unsafe_allow_html=True
 )
 
