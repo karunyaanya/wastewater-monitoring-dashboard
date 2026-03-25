@@ -1,5 +1,6 @@
 import os
 import json
+import base64
 import streamlit as st
 import pandas as pd
 import firebase_admin
@@ -14,31 +15,56 @@ st.set_page_config(
     layout="wide"
 )
 
-# 🔥 REMOVE TOP SPACE + FORCE CENTER + FIX IMAGE CUT
+# ------------------ CSS ------------------
 st.markdown("""
-    <style>
-    .block-container {
-        padding-top: 0rem;
-        text-align: center;
-    }
+<style>
+.block-container {
+    padding-top: 0rem;
+}
 
-    /* Center image properly */
-    .center-logo {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
+/* CENTER LOGO PERFECTLY */
+.center-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+/* LOGO STYLE */
+.center-logo img {
+    width: 220px;
+    transition: transform 0.3s ease;
+}
+
+.center-logo img:hover {
+    transform: scale(1.05);
+}
+
+/* CENTER TITLE */
+.center-title {
+    text-align: center;
+    margin-top: 10px;
+}
 </style>
 """, unsafe_allow_html=True)
 
-# 🔥 CENTER LOGO (FULL VISIBLE, NO CUT)
-st.image("logo.png", width=300)
+# ------------------ LOAD IMAGE ------------------
+def get_base64(img_path):
+    with open(img_path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
 
-# 🔥 TITLE
+img_base64 = get_base64("logo.png")
+
+# ------------------ DISPLAY LOGO ------------------
+st.markdown(f"""
+<div class="center-logo">
+    <img src="data:image/png;base64,{img_base64}">
+</div>
+""", unsafe_allow_html=True)
+
+# ------------------ TITLE ------------------
 st.markdown(
-    "<h1 style='text-align:center; margin-top:10px;'>Wastewater Monitoring Dashboard</h1>",
+    "<h1 class='center-title'>Wastewater Monitoring Dashboard</h1>",
     unsafe_allow_html=True
 )
 
