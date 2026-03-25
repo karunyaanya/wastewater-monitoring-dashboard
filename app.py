@@ -13,8 +13,8 @@ st.set_page_config(
     page_icon="💧",
     layout="wide"
 )
-
-st.title("💧 Wastewater Monitoring Dashboard")
+st.title("💧 RENEIRDE TECHNOLOGIES PVT LTD")
+st.title("Wastewater Monitoring Dashboard")
 
 # ------------------ FIREBASE INIT ------------------
 if not firebase_admin._apps:
