@@ -14,26 +14,27 @@ st.set_page_config(
     layout="wide"
 )
 
-# 🔥 REMOVE TOP SPACE
+# 🔥 REMOVE TOP SPACE COMPLETELY
 st.markdown("""
     <style>
         .block-container {
-            padding-top: 1rem;
+            padding-top: 0rem;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# 🔥 CENTER LOGO + TITLE
+# 🔥 CENTER BRAND LOGO (TOP)
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
 
-st.image("logo.png", width=280)
-
-st.markdown(
-    "<h1 style='margin-top:-10px;'>💧 Wastewater Monitoring Dashboard</h1>",
-    unsafe_allow_html=True
-)
+st.image("logo.png", width=320)
 
 st.markdown("</div>", unsafe_allow_html=True)
+
+# 🔥 TITLE BELOW (CENTER)
+st.markdown(
+    "<h1 style='text-align: center;'>💧 Wastewater Monitoring Dashboard</h1>",
+    unsafe_allow_html=True
+)
 
 # ------------------ FIREBASE INIT ------------------
 if not firebase_admin._apps:
