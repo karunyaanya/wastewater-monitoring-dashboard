@@ -18,10 +18,10 @@ col1, col2 = st.columns([1, 6])
 
 
 with col1:
-    st.image("logo.png", width=250)
+    st.image("logo.png", width=500)
 
 with col2:
-    st.title("💧 Wastewater Monitoring Dashboard")
+    st.title("Wastewater Monitoring Dashboard")
 
 # ------------------ FIREBASE INIT ------------------
 if not firebase_admin._apps:
