@@ -14,10 +14,14 @@ st.set_page_config(
     layout="wide"
 )
 # ✅ ADD IMAGE HERE
-st.image("logo.png", use_container_width=True)
+col1, col2 = st.columns([1, 6])
 
-st.title("💧 RENEIRDE TECHNOLOGIES PVT LTD")
-st.title("Wastewater Monitoring Dashboard")
+with col1:
+    st.image("logo.png", width=120)
+
+with col2:
+    st.title("💧 RENEIRDE TECHNOLOGIES PVT LTD")
+    st.subheader("Wastewater Monitoring Dashboard")
 
 # ------------------ FIREBASE INIT ------------------
 if not firebase_admin._apps:
