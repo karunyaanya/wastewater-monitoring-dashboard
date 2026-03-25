@@ -13,17 +13,27 @@ st.set_page_config(
     page_icon="💧",
     layout="wide"
 )
-# ✅ ADD IMAGE HERE
-# ✅ CENTER BIG LOGO
+
+# 🔥 REMOVE TOP SPACE
+st.markdown("""
+    <style>
+        .block-container {
+            padding-top: 1rem;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# 🔥 CENTER LOGO + TITLE
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
 
-st.image("logo.png", width=350)
+st.image("logo.png", width=280)
+
+st.markdown(
+    "<h1 style='margin-top:-10px;'>💧 Wastewater Monitoring Dashboard</h1>",
+    unsafe_allow_html=True
+)
 
 st.markdown("</div>", unsafe_allow_html=True)
-
-# ✅ TITLE BELOW
-st.title("💧 Wastewater Monitoring Dashboard")
-
 
 # ------------------ FIREBASE INIT ------------------
 if not firebase_admin._apps:
@@ -93,7 +103,6 @@ if not df.empty:
     # ------------------ TABLE ------------------
     st.subheader("📋 Water Analysis Report")
 
-    # 🔥 REPLACED DROPDOWN WITH TABS
     tab1, tab2, tab3 = st.tabs(["Primary", "Secondary", "Tertiary"])
 
     parameters = [
