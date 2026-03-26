@@ -19,25 +19,49 @@ st.set_page_config(
 st.markdown("""
 <style>
 .block-container {
-    padding-top: 0rem;
+    padding-top: 1rem;
 }
 
-/* CENTER LOGO */
-.center-logo {
+/* 🔥 HEADER STYLE */
+.header-container {
     display: flex;
-    justify-content: center;
     align-items: center;
-    width: 100%;
+    gap: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
-.center-logo img {
-    width: 220px;
+.header-container img {
+    width: 120px;
+    height: auto;
 }
 
-/* CENTER TITLE */
+.header-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.header-subtitle {
+    font-size: 14px;
+    color: gray;
+    margin: 0;
+}
+
+/* TITLE */
 .center-title {
     text-align: center;
-    margin-top: 10px;
+    margin-top: 5px;
+}
+
+/* TABLE */
+[data-testid="stDataFrame"] {
+    border-radius: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -47,18 +71,23 @@ def get_base64(img_path):
     with open(img_path, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
-img_base64 = get_base64("logo.png")
+img_base64 = get_base64("reinerde.png")
 
-# ------------------ DISPLAY LOGO ------------------
+# ------------------ HEADER ------------------
 st.markdown(f"""
-<div class="center-logo">
+<div class="header-container">
     <img src="data:image/png;base64,{img_base64}">
+    
+    <div class="header-text">
+        <h1 class="header-title">Reinerde</h1>
+        <p class="header-subtitle">Together for Tomorrow</p>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
-# ------------------ TITLE ------------------
+# ------------------ MAIN TITLE ------------------
 st.markdown(
-    "<h1 class='center-title'>💧 Wastewater Monitoring Dashboard</h1>",
+    "<h2 class='center-title'>💧 Wastewater Monitoring Dashboard</h2>",
     unsafe_allow_html=True
 )
 
@@ -127,7 +156,26 @@ if not df.empty:
     latest = df.iloc[-1]
     st.caption(f"Last Updated: {latest.name}")
 
-    # ------------------ COMBINED TABLE ------------------
+    # ------------------ SUMMARY ------------------
+    st.subheader("📊 Quick Summary")
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("pH", safe_get(latest["ph"], "primary"))
+    col2.metric("COD", safe_get(latest["cod"], "primary"))
+    col3.metric("BOD", safe_get(latest["bod"], "primary"))
+
+    # ------------------ ALERT ------------------
+    cod_val = safe_get(latest["cod"], "primary")
+
+    if cod_val > 350:
+        st.error("🚨 COD Level Critical")
+    elif cod_val > 250:
+        st.warning("⚠️ COD Level High")
+    else:
+        st.success("✅ COD Normal")
+
+    # ------------------ TABLE ------------------
     st.subheader("📋 Water Analysis Report")
 
     parameters = [
@@ -160,6 +208,10 @@ if not df.empty:
     df_table = pd.DataFrame(table)
 
     st.dataframe(df_table, use_container_width=True)
+
+    # ------------------ DOWNLOAD ------------------
+    csv = df.to_csv(index=False)
+    st.download_button("📥 Download Report", csv, "water_report.csv")
 
     # ------------------ CHARTS ------------------
     st.subheader("📊 Parameter Dashboard")
