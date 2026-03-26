@@ -19,20 +19,19 @@ st.set_page_config(
 st.markdown("""
 <style>
 .block-container {
-    padding-top: 1rem;
+    padding-top: 0.5rem;
 }
 
-/* 🔥 HEADER STYLE */
+/* 🔥 HEADER */
 .header-container {
     display: flex;
     align-items: center;
-    gap: 20px;
-    margin-top: 10px;
+    gap: 15px;
     margin-bottom: 10px;
 }
 
 .header-container img {
-    width: 120px;
+    width: 90px;
     height: auto;
 }
 
@@ -42,21 +41,28 @@ st.markdown("""
 }
 
 .header-title {
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 26px;
+    font-weight: bold;
     margin: 0;
+    color: white;
 }
 
 .header-subtitle {
-    font-size: 14px;
-    color: gray;
+    font-size: 13px;
+    color: #9ca3af;
     margin: 0;
 }
 
-/* TITLE */
+/* CENTER TITLE */
 .center-title {
     text-align: center;
-    margin-top: 5px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+/* SELECT BOX */
+div[data-baseweb="select"] {
+    border-radius: 8px;
 }
 
 /* TABLE */
@@ -77,7 +83,6 @@ img_base64 = get_base64("reinerde.png")
 st.markdown(f"""
 <div class="header-container">
     <img src="data:image/png;base64,{img_base64}">
-    
     <div class="header-text">
         <h1 class="header-title">Reinerde</h1>
         <p class="header-subtitle">Together for Tomorrow</p>
