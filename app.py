@@ -18,17 +18,19 @@ st.set_page_config(
 )
 
 # ------------------ HEADER ------------------
-col1, col2 = st.columns([1, 10])
+col_left, col_center, col_right = st.columns([1, 6, 1])
 
-with col1:
-    st.image("icon.PNG", width=70)
+with col_center:
+    col1, col2 = st.columns([1, 8])
 
-with col2:
-    st.markdown("""
-    <h1 style='margin-bottom:0;'>REINERDE TECHNOLOGIES PVT LTD</h1>
-    <h3 style='margin-top:0; font-weight:400;'>Wastewater Monitoring Dashboard</h3>
-    """, unsafe_allow_html=True)
+    with col1:
+        st.image("icon.png", width=70)
 
+    with col2:
+        st.markdown("""
+        <h1 style='margin-bottom:0;'>REINERDE TECHNOLOGIES PVT LTD</h1>
+        <h3 style='margin-top:0; font-weight:400;'>Wastewater Monitoring Dashboard</h3>
+        """, unsafe_allow_html=True)
 # ------------------ FIREBASE INIT ------------------
 if not firebase_admin._apps:
     firebase_dict = json.loads(os.environ["FIREBASE_KEY"])
