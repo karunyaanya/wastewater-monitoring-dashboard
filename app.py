@@ -29,7 +29,7 @@ with col_center:
     with col2:
         st.markdown("""
         <h1 style='margin-bottom:0;'>REINERDE TECHNOLOGIES PVT LTD</h1>
-        <h3 style='margin-top:0; font-weight:400;'>Wastewater Monitoring Dashboard</h3>
+        <h3 style='margin-top:0; font-weight:400; text-align:center;'>Wastewater Monitoring Dashboard</h3>
         """, unsafe_allow_html=True)
 # ------------------ FIREBASE INIT ------------------
 if not firebase_admin._apps:
