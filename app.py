@@ -86,7 +86,8 @@ st.markdown(f"""
 
 # ------------------ MAIN TITLE ------------------
 st.markdown(
-    "<h2 class='center-title'>💧 Wastewater Monitoring Dashboard</h2>",
+    "<h1 class='center-title'>REINERDE TECHNOLOGIES PVT LTD</h1>",
+    "<h2 class='center-title'>Wastewater Monitoring Dashboard</h2>",
     unsafe_allow_html=True
 )
 
