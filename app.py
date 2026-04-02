@@ -74,7 +74,7 @@ def get_base64(img_path):
     with open(img_path, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
-img_base64 = get_base64("reinerde.png")
+img_base64 = get_base64("icon.PNG")
 
 # ------------------ HEADER ------------------
 st.markdown(f"""
