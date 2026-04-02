@@ -10,66 +10,20 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 img = Image.open("icon.PNG")
+import streamlit as st
+from PIL import Image
+import base64
 
 # ------------------ PAGE CONFIG ------------------
+img = Image.open("icon.PNG")
+
 st.set_page_config(
     page_title="Wastewater Monitoring System",
-    page_icon= img,
+    page_icon=img,
     layout="wide"
 )
 
-# ------------------ CSS ------------------
-st.markdown("""
-<style>
-.block-container {
-    padding-top: 1rem;
-}
-
-/* 🔥 HEADER STYLE */
-.header-container {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-.header-container img {
-    width: 120px;
-    height: auto;
-}
-
-.header-text {
-    display: flex;
-    flex-direction: column;
-}
-
-.header-title {
-    font-size: 32px;
-    font-weight: 700;
-    margin: 0;
-}
-
-.header-subtitle {
-    font-size: 14px;
-    color: gray;
-    margin: 0;
-}
-
-/* TITLE */
-.center-title {
-    text-align: center;
-    margin-top: 5px;
-}
-
-/* TABLE */
-[data-testid="stDataFrame"] {
-    border-radius: 10px;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ------------------ LOAD IMAGE ------------------
+# ------------------ IMAGE LOAD ------------------
 def get_base64(img_path):
     with open(img_path, "rb") as f:
         return base64.b64encode(f.read()).decode()
@@ -78,20 +32,17 @@ img_base64 = get_base64("icon.PNG")
 
 # ------------------ HEADER ------------------
 st.markdown(f"""
-<div class="header-container">
-    <img src="data:image/png;base64,{img_base64}">
-    
+<div style="display:flex; align-items:center; justify-content:center; gap:15px; margin-top:10px;">
+
+    <img src="data:image/png;base64,{img_base64}" style="width:70px;">
+
+    <div>
+        <h1 style="margin:0;">REINERDE TECHNOLOGIES PVT LTD</h1>
+        <h3 style="margin:0; font-weight:400;">Wastewater Monitoring Dashboard</h3>
+    </div>
+
 </div>
 """, unsafe_allow_html=True)
-
-# ------------------ MAIN TITLE ------------------
-st.markdown(
-    """
-    <h1 class='center-title'>REINERDE TECHNOLOGIES PVT LTD</h1>
-    <h2 class='center-title'>Wastewater Monitoring Dashboard</h2>
-    """,
-    unsafe_allow_html=True
-)
 # ------------------ FIREBASE INIT ------------------
 if not firebase_admin._apps:
     firebase_dict = json.loads(os.environ["FIREBASE_KEY"])
@@ -261,4 +212,3 @@ if not df.empty:
                                 autopct="%1.1f%%"
                             )
                             st.pyplot(fig)
-                            
