@@ -25,8 +25,8 @@ with col_center:
     col1, col2 = st.columns([1, 9])
 
     with col1:
-        st.markdown("<div style='padding-top:10px; text-align:right;'>", unsafe_allow_html=True)
-        st.image("icon.PNG", width=60)
+        st.markdown("<div style='padding-top:20px; text-align:right;'>", unsafe_allow_html=True)
+        st.image("icon.PNG", width=70)
         st.markdown("</div>", unsafe_allow_html=True)
 
     with col2:
