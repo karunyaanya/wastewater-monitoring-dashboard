@@ -7,11 +7,14 @@ import firebase_admin
 from firebase_admin import credentials, db
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
+from PIL import Image
+
+img = Image.open("icon.PNG")
 
 # ------------------ PAGE CONFIG ------------------
 st.set_page_config(
     page_title="Wastewater Monitoring System",
-    page_icon="💧",
+    page_icon= img,
     layout="wide"
 )
 
