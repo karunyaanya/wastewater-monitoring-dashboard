@@ -1,6 +1,5 @@
 import os
 import json
-import base64
 import streamlit as st
 import pandas as pd
 import firebase_admin
@@ -9,13 +8,8 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 from PIL import Image
 
-img = Image.open("icon.PNG")
-import streamlit as st
-from PIL import Image
-import base64
-
 # ------------------ PAGE CONFIG ------------------
-img = Image.open("icon.PNG")
+img = Image.open("icon.png")
 
 st.set_page_config(
     page_title="Wastewater Monitoring System",
@@ -23,26 +17,18 @@ st.set_page_config(
     layout="wide"
 )
 
-# ------------------ IMAGE LOAD ------------------
-def get_base64(img_path):
-    with open(img_path, "rb") as f:
-        return base64.b64encode(f.read()).decode()
-
-img_base64 = get_base64("icon.PNG")
-
 # ------------------ HEADER ------------------
-st.markdown(f"""
-<div style="display:flex; align-items:center; justify-content:center; gap:15px; margin-top:10px;">
+col1, col2 = st.columns([1, 10])
 
-    <img src="data:image/png;base64,{img_base64}" style="width:70px;">
+with col1:
+    st.image("icon.png", width=70)
 
-    <div>
-        <h1 style="margin:0;">REINERDE TECHNOLOGIES PVT LTD</h1>
-        <h3 style="margin:0; font-weight:400;">Wastewater Monitoring Dashboard</h3>
-    </div>
+with col2:
+    st.markdown("""
+    <h1 style='margin-bottom:0;'>REINERDE TECHNOLOGIES PVT LTD</h1>
+    <h3 style='margin-top:0; font-weight:400;'>Wastewater Monitoring Dashboard</h3>
+    """, unsafe_allow_html=True)
 
-</div>
-""", unsafe_allow_html=True)
 # ------------------ FIREBASE INIT ------------------
 if not firebase_admin._apps:
     firebase_dict = json.loads(os.environ["FIREBASE_KEY"])
