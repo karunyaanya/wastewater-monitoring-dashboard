@@ -21,15 +21,24 @@ st.set_page_config(
 col_left, col_center, col_right = st.columns([1, 6, 1])
 
 with col_center:
-    col1, col2 = st.columns([1, 8])
+
+    col1, col2 = st.columns([1, 9])
 
     with col1:
-        st.image("icon.PNG", width=70)
+        st.markdown("""
+        <div style="display:flex; justify-content:flex-end; padding-top:10px;">
+            <img src="icon.PNG" width="60">
+        </div>
+        """, unsafe_allow_html=True)
 
     with col2:
         st.markdown("""
-        <h1 style='margin-bottom:0;'>REINERDE TECHNOLOGIES PVT LTD</h1>
-        <h3 style='margin-top:0; font-weight:400; text-align:center;'>Wastewater Monitoring Dashboard</h3>
+        <h1 style='margin-bottom:0; text-align:center;'>
+        REINERDE TECHNOLOGIES PVT LTD
+        </h1>
+        <h3 style='margin-top:0; font-weight:400; text-align:center;'>
+        Wastewater Monitoring Dashboard
+        </h3>
         """, unsafe_allow_html=True)
 # ------------------ FIREBASE INIT ------------------
 if not firebase_admin._apps:
