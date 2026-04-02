@@ -24,7 +24,7 @@ with col_center:
     col1, col2 = st.columns([1, 8])
 
     with col1:
-        st.image("icon.png", width=70)
+        st.image("icon.PNG", width=70)
 
     with col2:
         st.markdown("""
